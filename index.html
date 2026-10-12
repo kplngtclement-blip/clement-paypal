@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcast · private circles</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f9f7f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .broadcast-container {
+            max-width: 720px;
+            width: 100%;
+            background: white;
+            border-radius: 2.5rem;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 4px 18px rgba(0, 0, 0, 0.05);
+            padding: 2rem 1.8rem 2.2rem;
+            border: 1px solid #edeae6;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #1e1b1a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .subhead {
+            font-size: 0.95rem;
+            color: #7b6e68;
+            margin-bottom: 2rem;
+            border-left: 3px solid #d9cdc4;
+            padding-left: 0.85rem;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        .friend-manager {
+            background: #f3f1ee;
+            border-radius: 2rem;
+            padding: 1.5rem 1.5rem 1.8rem;
+            margin-bottom: 2rem;
+            transition: all 0.1s ease;
+        }
+
+        .section-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #6b5e57;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .add-friend-row {
+            display: flex;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .add-friend-row input {
+            flex: 1 1 200px;
+            padding: 0.9rem 1.2rem;
+            border-radius: 3rem;
+            border: 1.5px solid #ddd6cf;
+            background: white;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.15s;
+            color: #1e1b1a;
+        }
+
+        .add-friend-row input:focus {
+            border-color: #b5a89e;
+            box-shadow: 0 0 0 4px rgba(181, 168, 158, 0.15);
+        }
+
+        .add-friend-row input::placeholder {
+            color: #a99f98;
+            font-weight: 300;
+        }
+
+        .btn {
+            border: none;
+            background: #1e1b1a;
+            color: white;
+            font-weight: 500;
+            padding: 0.9rem 1.8rem;
+            border-radius: 3rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #2f2b29;
+            transform: scale(0.98);
+        }
+
+        .btn:active {
+            background: #0f0d0c;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            background: #e7e1db;
+            color: #2b2522;
+        }
+
+        .btn-small:hover {
+            background: #d9d0c8;
+        }
+
+        .friend-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+            min-height: 2.8rem;
+            align-items: center;
+        }
+
+        .friend-tag {
+            background: white;
+            border-radius: 3rem;
+            padding: 0.45rem 1rem 0.45rem 1.2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #2d2724;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2dbd5;
+            transition: all 0.1s;
+        }
+
+        .friend-tag .remove-friend {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            line-height: 1;
+            cursor: pointer;
+            color: #b1a59d;
+            padding: 0 0.2rem;
+            transition: 0.1s;
+            font-weight: 300;
+        }
+
+        .friend-tag .remove-friend:hover {
+            color: #c73b3b;
+            transform: scale(1.2);
+        }
+
+        .empty-friends {
+            color: #a89c94;
+            font-size: 0.9rem;
+            font-style: italic;
+            padding: 0.5rem 0;
+        }
+
+        .broadcast-panel {
+            margin-top: 0.5rem;
+        }
+
+        .broadcast-panel .section-label {
+            margin-bottom: 0.75rem;
+        }
+
+        .broadcast-input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .broadcast-input-area textarea {
+            width: 100%;
+            padding: 1.1rem 1.3rem;
+            border-radius: 1.8rem;
+            border: 1.5px solid #ddd6cf;
+            background: white;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 95px;
+            outline: none;
+            transition: 0.15s;
+            font-family: inherit;
+            color: #1e1b1a;
+            line-height: 1.45;
+        }
+
+        .broadcast-input-area textarea:focus {
+            border-color: #b5a89e;
+            box-shadow: 0 0 0 4px rgba(181, 168, 158, 0.15);
+        }
+
+        .broadcast-input-area textarea::placeholder {
+            color: #b1a59d;
+            font-weight: 300;
+        }
+
+        .action-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .feed {
+            background: #faf9f7;
+            border-radius: 1.8rem;
+            padding: 1.5rem 1.3rem 0.8rem;
+            border: 1px solid #ece7e1;
+            max-height: 320px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #d9d0c8 #f1ede8;
+        }
+
+        .feed::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .feed::-webkit-scrollbar-track {
+            background: #f1ede8;
+            border-radius: 10px;
+        }
+
+        .feed::-webkit-scrollbar-thumb {
+            background: #d9d0c8;
+            border-radius: 10px;
+        }
+
+        .message-item {
+            margin-bottom: 1.2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #ece7e1;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .message-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0.2rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.7rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: #1e1b1a;
+            font-size: 0.92rem;
+            letter-spacing: -0.01em;
+        }
+
+        .message-badge {
+            font-size: 0.68rem;
+            background: #e7e1db;
+            padding: 0.15rem 0.6rem;
+            border-radius: 2rem;
+            color: #4d423c;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .message-text {
+            color: #2e2824;
+            font-size: 0.96rem;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: #b1a59d;
+            margin-top: 0.3rem;
+            display: block;
+        }
+
+        .info-note {
+            font-size: 0.78rem;
+            color: #9b8e86;
+            margin-top: 1.5rem;
+            text-align: center;
+            border-top: 1px solid #edeae6;
+            padding-top: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .info-note span {
+            background: #edeae6;
+            padding: 0.2rem 0.7rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            font-size: 0.7rem;
+            color: #5f554e;
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e1b1a;
+            color: #f0ede9;
+            padding: 0.7rem 1.6rem;
+            border-radius: 3rem;
+            font-size: 0.85rem;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 999;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+
+        .toast-message.show {
+            opacity: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="broadcast-container">
+        <h1>
+            <span>📡 broadcast</span>
+        </h1>
+        <div class="subhead">
+            your private frequency · each friend only sees your messages, never each other
+        </div>
+
+        <!-- friend manager -->
+        <div class="friend-manager">
+            <div class="section-label">
+                <span>👥</span> your circle (only you see this list)
+            </div>
+            <div class="add-friend-row">
+                <input type="text" id="friendNameInput" placeholder="add friend by name (e.g. Alex, Sam, Riley)" autocomplete="off">
+                <button class="btn" id="addFriendBtn">Add</button>
+            </div>
+            <div class="friend-list" id="friendListContainer">
+                <!-- dynamic friend tags appear here -->
+            </div>
+        </div>
+
+        <!-- broadcast panel -->
+        <div class="broadcast-panel">
+            <div class="section-label">
+                <span>📨</span> compose broadcast
+            </div>
+            <div class="broadcast-input-area">
+                <textarea id="broadcastMessage" placeholder="Write a message to all your friends... (they'll each receive it privately)"></textarea>
+                <div class="action-row">
+                    <button class="btn" id="sendBroadcastBtn">Broadcast to all</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- feed: shows broadcast as sent from YOU, with autoreply simulation from friends -->
+        <div class="section-label">
+            <span>📬</span> your broadcast feed
+        </div>
+        <div class="feed" id="feedContainer">
+            <!-- messages appear here -->
+        </div>
+
+        <div class="info-note">
+            <span>🔒</span> each friend sees only your messages & their own autoreplies
+            <span>🤖</span> auto-reply is on
+        </div>
+    </div>
+
+    <div id="toast" class="toast-message">✓ added</div>
+
+    <script>
+        (function() {
+            // ---------- state ----------
+            // friends: array of strings (names). No two friends know each other.
+            let friends = [];
+
+            // feed items: each broadcast event creates ONE main broadcast entry and
+            // multiple auto-reply entries — but we display them as separate messages.
+            // However, to keep the illusion that friends don't know each other, we 
+            // show only YOU as the broadcaster, and auto-replies appear as separate
+            // 'private' replies from each friend (they don't see other replies).
+            // The feed shows: your broadcast (with a "to all" badge) + each friend's
+            // autoreply as individual messages. That's fine because the user (you) 
+            // sees everything, but friends never see each other's replies.
+
+            // We'll store feed items: { id, type: 'broadcast' | 'autoreply', author, text, timestamp, targetFriend? }
+            let feedItems = [];
+
+            // DOM elements
+            const friendNameInput = document.getElementById('friendNameInput');
+            const addFriendBtn = document.getElementById('addFriendBtn');
+            const friendListContainer = document.getElementById('friendListContainer');
+            const broadcastMessage = document.getElementById('broadcastMessage');
+            const sendBroadcastBtn = document.getElementById('sendBroadcastBtn');
+            const feedContainer = document.getElementById('feedContainer');
+            const toastEl = document.getElementById('toast');
+
+            // ---------- helpers ----------
+            function showToast(text) {
+                toastEl.textContent = text;
+                toastEl.classList.add('show');
+                setTimeout(() => {
+                    toastEl.classList.remove('show');
+                }, 1500);
+            }
+
+            // format time as HH:MM
+            function getTimeString() {
+                const d = new Date();
+                return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            // generate a simple id
+            function uid() {
+                return Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+            }
+
+            // ---------- render friend list ----------
+            function renderFriendList() {
+                friendListContainer.innerHTML = '';
+                if (friends.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'empty-friends';
+                    emptyMsg.textContent = 'no friends added yet · add someone to start broadcasting';
+                    friendListContainer.appendChild(emptyMsg);
+                    return;
+                }
+
+                friends.forEach(friendName => {
+                    const tag = document.createElement('div');
+                    tag.className = 'friend-tag';
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = friendName;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-friend';
+                    removeBtn.innerHTML = '✕';
+                    removeBtn.setAttribute('aria-label', `Remove ${friendName}`);
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        removeFriend(friendName);
+                    });
+                    
+                    tag.appendChild(nameSpan);
+                    tag.appendChild(removeBtn);
+                    friendListContainer.appendChild(tag);
+                });
+            }
+
+            // ---------- friend operations ----------
+            function addFriend() {
+                const rawName = friendNameInput.value.trim();
+                if (!rawName) {
+                    showToast('enter a name');
+                    return;
+                }
+
+                // prevent duplicates (case-insensitive check, but keep original case for display)
+                const exists = friends.some(f => f.toLowerCase() === rawName.toLowerCase());
+                if (exists) {
+                    showToast(`"${rawName}" already in your circle`);
+                    friendNameInput.value = '';
+                    return;
+                }
+
+                // limit to 12 friends for sanity
+                if (friends.length >= 12) {
+                    showToast('circle is full (max 12)');
+                    friendNameInput.value = '';
+                    return;
+                }
+
+                friends.push(rawName);
+                friendNameInput.value = '';
+                renderFriendList();
+                showToast(`✓ ${rawName} added`);
+                // No feed changes; they don't see each other
+            }
+
+            function removeFriend(nameToRemove) {
+                friends = friends.filter(f => f !== nameToRemove);
+                renderFriendList();
+                showToast(`removed ${nameToRemove}`);
+                // no feed removal — past broadcasts are historical.
+            }
+
+            // ---------- feed rendering ----------
+            function renderFeed() {
+                if (feedItems.length === 0) {
+                    feedContainer.innerHTML = `
+                        <div style="padding: 1.8rem 0.5rem; text-align: center; color: #b1a59d; font-style: italic; font-size: 0.9rem;">
+                            no broadcasts yet · your messages and auto-replies will appear here
+                        </div>
+                    `;
+                    return;
+                }
+
+                // sort by timestamp (oldest first)
+                const sorted = [...feedItems].sort((a, b) => a.timestamp - b.timestamp);
+                
+                feedContainer.innerHTML = '';
+                sorted.forEach(item => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = 'message-item';
+
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'message-header';
+
+                    const authorSpan = document.createElement('span');
+                    authorSpan.className = 'message-author';
+                    authorSpan.textContent = item.author;
+
+                    const badgeSpan = document.createElement('span');
+                    badgeSpan.className = 'message-badge';
+
+                    if (item.type === 'broadcast') {
+                        badgeSpan.textContent = 'broadcast · to all';
+                    } else {
+                        badgeSpan.textContent = `auto-reply · private`;
+                    }
+
+                    headerDiv.appendChild(authorSpan);
+                    headerDiv.appendChild(badgeSpan);
+
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'message-text';
+                    textDiv.textContent = item.text;
+
+                    const timeSpan = document.createElement('span');
+                    timeSpan.className = 'message-time';
+                    timeSpan.textContent = item.timeString;
+
+                    msgDiv.appendChild(headerDiv);
+                    msgDiv.appendChild(textDiv);
+                    msgDiv.appendChild(timeSpan);
+
+                    feedContainer.appendChild(msgDiv);
+                });
+
+                // auto scroll to bottom
+                feedContainer.scrollTop = feedContainer.scrollHeight;
+            }
+
+            // ---------- broadcast with autoreply simulation ----------
+            function sendBroadcast() {
+                const messageText = broadcastMessage.value.trim();
+                if (!messageText) {
+                    showToast('write a message first');
+                    return;
+                }
+
+                if (friends.length === 0) {
+                    showToast('add at least one friend to broadcast');
+                    return;
+                }
+
+                const timestamp = Date.now();
+                const timeStr = getTimeString();
+
+                // 1. Add the main broadcast from "you"
+                feedItems.push({
+                    id: uid(),
+                    type: 'broadcast',
+                    author: 'You',
+                    text: messageText,
+                    timestamp: timestamp,
+                    timeString: timeStr
+                });
+
+                // 2. For each friend, generate an auto-reply (separate, as if private)
+                //    We'll stagger the timestamps slightly so ordering feels natural.
+                friends.forEach((friendName, index) => {
+                    // simple autoreply generator: based on message content and friend's name.
+                    // It's a lightweight echo / acknowledgement to keep the illusion.
+                    const replyText = generateAutoReply(friendName, messageText, index);
+                    
+                    // simulate a small delay in timestamp (0.5 - 2.2 seconds after broadcast)
+                    const replyDelay = 500 + Math.floor(Math.random() * 1800) + (index * 120);
+                    const replyTimestamp = timestamp + replyDelay;
+                    
+                    // format time for reply (use same timeStr but can be different if crosses minute)
+                    const replyDate = new Date(replyTimestamp);
+                    const replyTimeStr = replyDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    feedItems.push({
+                        id: uid(),
+                        type: 'autoreply',
+                        author: friendName,   // friends are displayed by name, but each reply only visible to you.
+                        text: replyText,
+                        timestamp: replyTimestamp,
+                        timeString: replyTimeStr
+                    });
+                });
+
+                // clear textarea
+                broadcastMessage.value = '';
+
+                // re-render feed and sort
+                renderFeed();
+
+                // show a little confirmation toast
+                showToast(`broadcast sent to ${friends.length} friend${friends.length > 1 ? 's' : ''}`);
+            }
+
+            // ---------- autoreply generator ----------
+            function generateAutoReply(friendName, originalMessage, index) {
+                // Simple but feels natural. Prewritten templates that don't reveal other friends.
+                const templates = [
+                    `Got it, thanks for the update.`,
+                    `Received 👍`,
+                    `Noted, I'll take a look.`,
+                    `Sounds good!`,
+                    `Thanks for keeping me in the loop.`,
+                    `Appreciate the message.`,
+                    `👍`,
+                    `I see, will follow up if needed.`,
+                    `Copy that.`,
+                    `Thanks — talk soon.`,
+                    `Interesting, thanks for sharing.`,
+                    `Okay, noted.`,
+                    `Will do!`,
+                    `Perfect, thanks.`,
+                    `Got your message, cheers.`
+                ];
+
+                // also use a tiny bit of context: if message is a question, reply differently
+                const isQuestion = originalMessage.trim().endsWith('?') || 
+                                   /\b(what|how|when|where|who|why|which|can you|could you|will you)\b/i.test(originalMessage);
+
+                let base;
+                if (isQuestion) {
+                    const questionReplies = [
+                        `Good question — let me check and get back to you.`,
+                        `I'm not sure yet, but I'll look into it.`,
+                        `I'll find out and reply soon.`,
+                        `Hmm, let me think about that.`,
+                        `I'll get back to you on that.`
+                    ];
+                    base = questionReplies[Math.floor(Math.random() * questionReplies.length)];
+                } else {
+                    base = templates[Math.floor(Math.random() * templates.length)];
+                }
+
+                // Occasionally add a friendly personal touch based on friend's name
+                // but avoid making it obvious that it's a bot. Light personalization.
+                const personalTouch = [
+                    ``,
+                    ``,
+                    ``,
+                    ` — ${friendName}`,
+                    ``,
+                    ` (${friendName})`,
+                    ``
+                ];
+                const touch = personalTouch[Math.floor(Math.random() * personalTouch.length)];
+                
+                // Very rare: add "thanks" or "cheers" with name
+                if (Math.random() < 0.2) {
+                    return base + ` – ${friendName}`;
+                }
+                return base;
+            }
+
+            // ---------- event bindings ----------
+            addFriendBtn.addEventListener('click', addFriend);
+            friendNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addFriend();
+                }
+            });
+
+            sendBroadcastBtn.addEventListener('click', sendBroadcast);
+
+            // Allow Ctrl+Enter (or Cmd+Enter) to send from textarea
+            broadcastMessage.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    sendBroadcast();
+                }
+            });
+
+            // ---------- initial render ----------
+            // add a few sample friends to make it immediately usable (optional, but nice)
+            // comment out if you want to start empty, but I'll add 2 to demonstrate.
+            // (The user can remove them)
+            if (friends.length === 0) {
+                friends = ['Alex', 'Sam'];
+            }
+            renderFriendList();
+            renderFeed();
+
+            // if feed is empty, show placeholder; but also add a welcome broadcast? 
+            // No — keep it clean. But we could add a sample broadcast if desired.
+            // To make the demo more friendly, let's add one sample broadcast after a tiny delay? 
+            // Better not — user might want empty start. 
+            // Actually we can add a tiny welcome message from the system? 
+            // I'll leave it empty, but the placeholder is visible.
+
+            // However to show how it works, let's seed a subtle example.
+            // (uncomment if you want an initial broadcast demo)
+            /*
+            setTimeout(() => {
+                if (feedItems.length === 0) {
+                    // add a small example broadcast and autoreplies
+                    const welcomeText = 'Hey everyone, this is my private broadcast. Let me know you got it!';
+                    broadcastMessage.value = welcomeText;
+                    // but this would trigger real friends autoreply; we have friends Alex, Sam
+                    // we'll manually add items instead to avoid duplicate listeners
+                    // Quick manual addition:
+                    const now = Date.now();
+                    const t = getTimeString();
+                    feedItems.push({
+                        id: uid(), type: 'broadcast', author: 'You', text: welcomeText, timestamp: now, timeString: t
+                    });
+                    // add replies
+                    const reply1 = generateAutoReply('Alex', welcomeText, 0);
+                    const reply2 = generateAutoReply('Sam', welcomeText, 1);
+                    feedItems.push({ id: uid(), type: 'autoreply', author: 'Alex', text: reply1, timestamp: now+800, timeString: new Date(now+800).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+                    feedItems.push({ id: uid(), type: 'autoreply', author: 'Sam', text: reply2, timestamp: now+1400, timeString: new Date(now+1400).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+                    renderFeed();
+                }
+            }, 300);
+            */
+        })();
+    </script>
+</body>
+</html>
